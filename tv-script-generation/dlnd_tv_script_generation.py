@@ -403,28 +403,13 @@ def get_batches(int_text, batch_size, seq_length):
     :return: Batches as a Numpy array
     """
     # TODO: Implement Function
-    sent_ = []
-    tags_ = []
-    for i in range(int(len(int_text)/seq_length)):
-        sent_.append(int_text[i*seq_length:(i+1)*seq_length])
-        tags_.append(int_text[i*seq_length+1:(i+1)*seq_length+1])
 
-    data = []
-    sents= []
-    tagss = []
-    for sent,tags in zip(sent_,tags_):
-        if len(sent) == seq_length and len(tags) == seq_length:
-            sents.append(sent)
-            tagss.append(tags)
-            if len(sents) == batch_size:
-                bs = []
-                bs.append(sents)
-                bs.append(tagss)
-                data.append(bs)
-                bs= []
-                sents = []
-                tagss = []
-    return np.array(data)
+    n_batches = int(len(int_text) / (batch_size * seq_length))
+    xdata = np.array(int_text[: n_batches * batch_size * seq_length])
+    ydata = np.array(int_text[1: n_batches * batch_size * seq_length + 1])
+    x_batches = np.split(xdata.reshape(batch_size, -1), n_batches, 1)
+    y_batches = np.split(ydata.reshape(batch_size, -1), n_batches, 1)
+    return np.array(list(zip(x_batches, y_batches)))
 
 
 """
@@ -449,9 +434,9 @@ tests.test_get_batches(get_batches)
 
 
 # Number of Epochs
-num_epochs = 50
+num_epochs = 300
 # Batch Size
-batch_size = 32
+batch_size = 128
 # RNN Size
 rnn_size = 256
 # Embedding Dimension Size
@@ -459,7 +444,7 @@ embed_dim = 300
 # Sequence Length
 seq_length = 100
 # Learning Rate
-learning_rate = .1
+learning_rate = .01
 # Show stats for every n number of batches
 show_every_n_batches = 10
 
@@ -623,7 +608,7 @@ def pick_word(probabilities, int_to_vocab):
     :return: String of the predicted word
     """
     # TODO: Implement Function
-    return int_to_vocab[np.argmax(probabilities,axis=0)]
+    return np.random.choice(list(int_to_vocab.values()), 1, p=probabilities)[0]
 
 
 """
